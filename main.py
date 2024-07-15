@@ -48,11 +48,15 @@ async def open_giveaway(client, message):
     logging.info(f"Received /openga command from user {message.from_user.id}")
 
     try:
+        # Log the channel IDs being used
+        logging.info(f"Sending giveaway start message to channels {config.channel_id} and {config.channel_id2}")
+
         await app.send_message(config.channel_id, config.announce_message_start)
         await app.send_message(config.channel_id2, config.announce_message_start)
         await message.reply("Giveaway dibuka! Daftarkan username Anda dengan perintah /ikutga {username}.")
     except Exception as e:
         logging.error(f"Error sending giveaway start announcement: {e}")
+        await message.reply(f"Terjadi kesalahan saat memulai giveaway: {e}")
 
 @app.on_message(filters.command("ikutga") & filters.private)
 async def join_giveaway(client, message):
@@ -83,6 +87,7 @@ async def close_giveaway(client, message):
             await message.reply(f"Giveaway ditutup! Pemenangnya adalah: {winner}")
         except Exception as e:
             logging.error(f"Error sending giveaway winner announcement: {e}")
+            await message.reply(f"Terjadi kesalahan saat menutup giveaway: {e}")
     else:
         await message.reply("Tidak ada peserta yang terdaftar.")
 
