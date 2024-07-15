@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# Prompt for configuration values
+read -p "Enter API Hash: " api_hash
+read -p "Enter API ID: " api_id
+read -p "Enter Owner ID: " owner_id
+read -p "Enter Admin ID: " admin_id
+read -p "Enter Channel ID (-100xxxxxxxxxx): " channel_id
+read -p "Enter Second Channel ID (-100xxxxxxxxxx): " channel_id2
+read -p "Enter Bot Token: " bot_token
+
+# Prompt for announcement messages with default values
+read -p "Enter the announcement message for starting the giveaway (Default: '🎉 Giveaway dimulai! Daftar dengan perintah /ikutga {username} untuk berkesempatan menang!'): " announce_message_start
+announce_message_start=${announce_message_start:-"🎉 Giveaway dimulai! Daftar dengan perintah /ikutga {username} untuk berkesempatan menang!"}
+
+read -p "Enter the announcement message for the winner (Default: '🏆 Giveaway telah ditutup! Pemenangnya adalah: {winner}'): " announce_message_winner
+announce_message_winner=${announce_message_winner:-"🏆 Giveaway telah ditutup! Pemenangnya adalah: {winner}"}
+
+read -p "Enter the join message (Default: 'Anda harus bergabung dengan kedua channel berikut untuk ikut serta dalam giveaway:'): " pesan_join
+pesan_join=${pesan_join:-"Anda harus bergabung dengan kedua channel berikut untuk ikut serta dalam giveaway:"}
+
+# Write to config.py
+cat <<EOL > config.py
+api_hash = '$api_hash'
+api_id = '$api_id'
+owner_id = '$owner_id'
+admin_id = '$admin_id'
+channel_id = '$channel_id'
+channel_id2 = '$channel_id2'
+bot_token = '$bot_token'
+pesan_join = '$pesan_join'
+announce_message_start = '$announce_message_start'
+announce_message_winner = '$announce_message_winner'
+EOL
+
+# Update and install requirements
+pip install --upgrade pip
+pip install -r requirements.txt
