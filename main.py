@@ -1,6 +1,6 @@
 import logging
 from pyrogram import Client, filters
-from pyrogram.errors import UserNotParticipant
+from pyrogram.errors import UserNotParticipant, PeerIdInvalid
 import config
 import random
 
@@ -19,6 +19,9 @@ async def cek_langganan_channel(user_id):
         await app.get_chat_member(config.channel_id2, user_id)
     except UserNotParticipant:
         return False
+    except PeerIdInvalid:
+        logging.error("Invalid Peer ID for channel. Check if the bot is added to the channel and the channel ID is correct.")
+        raise
     return True
 
 async def pesan_langganan(user_id, message_id):
@@ -47,12 +50,15 @@ async def open_giveaway(client, message):
 async def join_giveaway(client, message):
     if len(message.text.split()) > 1:
         username = message.text.split(" ", 1)[1]
-        if await cek_langganan_channel(message.from_user.id):
-            participants.append(username)
-            logging.info(f"User {message.from_user.id} registered username {username} for the giveaway")
-            await message.reply(f"Username {username} berhasil didaftarkan untuk giveaway!")
-        else:
-            await pesan_langganan(message.from_user.id, message.message_id)
+        try:
+            if await cek_langganan_channel(message.from_user.id):
+                participants.append(username)
+                logging.info(f"User {message.from_user.id} registered username {username} for the giveaway")
+                await message.reply(f"Username {username} berhasil didaftarkan untuk giveaway!")
+            else:
+                await pesan_langganan(message.from_user.id, message.message_id)
+        except PeerIdInvalid:
+            await message.reply("Terjadi kesalahan pada ID channel. Pastikan bot Anda bergabung dengan channel yang benar.")
     else:
         await message.reply("Silakan masukkan username Anda setelah perintah /ikutga")
 
