@@ -32,8 +32,16 @@ async def join_giveaway(client, message: Message):
     username = message.command[1]
 
     try:
+        # Debug logging
+        print(f"Checking membership for user {message.from_user.id} in channels {channel_id} and {channel_id2}")
+
         user1 = await client.get_chat_member(channel_id, message.from_user.id)
         user2 = await client.get_chat_member(channel_id2, message.from_user.id)
+
+        # More debug logging
+        print(f"user1 status: {user1.status}")
+        print(f"user2 status: {user2.status}")
+
     except UserNotParticipant:
         await message.reply_text(pesan_join.format(channel1=channel_id, channel2=channel_id2))
         return
