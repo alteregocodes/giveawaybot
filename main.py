@@ -1,4 +1,5 @@
 from pyrogram import Client, filters
+from pyrogram.errors import PeerIdInvalid, UserNotParticipant
 from pyrogram.types import Message
 import random
 import os
@@ -29,10 +30,18 @@ async def join_giveaway(client, message: Message):
         return
 
     username = message.command[1]
-    user = await client.get_chat_member(channel_id, message.from_user.id)
-    user2 = await client.get_chat_member(channel_id2, message.from_user.id)
 
-    if user.status not in ["member", "administrator", "creator"] or user2.status not in ["member", "administrator", "creator"]:
+    try:
+        user1 = await client.get_chat_member(channel_id, message.from_user.id)
+        user2 = await client.get_chat_member(channel_id2, message.from_user.id)
+    except UserNotParticipant:
+        await message.reply_text(pesan_join.format(channel1=channel_id, channel2=channel_id2))
+        return
+    except PeerIdInvalid:
+        await message.reply_text("Bot belum diundang ke channel atau channel ID salah.")
+        return
+
+    if user1.status not in ["member", "administrator", "creator"] or user2.status not in ["member", "administrator", "creator"]:
         await message.reply_text(pesan_join.format(channel1=channel_id, channel2=channel_id2))
         return
 
