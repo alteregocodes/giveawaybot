@@ -25,13 +25,16 @@ async def cek_langganan_channel(user_id):
     return True
 
 async def pesan_langganan(user_id, message_id):
-    link_1 = await app.export_chat_invite_link(config.channel_id)
-    link_2 = await app.export_chat_invite_link(config.channel_id2)
-    markup = [
-        [("Channel base", link_1), ("Group base", link_2)],
-        [("Coba lagi", f'https://t.me/{(await app.get_me()).username}?start=start')]
-    ]
-    await app.send_message(user_id, config.pesan_join, reply_to_message_id=message_id, reply_markup=markup)
+    try:
+        link_1 = await app.export_chat_invite_link(config.channel_id)
+        link_2 = await app.export_chat_invite_link(config.channel_id2)
+        markup = [
+            [("Channel base", link_1), ("Group base", link_2)],
+            [("Coba lagi", f'https://t.me/{(await app.get_me()).username}?start=start')]
+        ]
+        await app.send_message(user_id, config.pesan_join, reply_to_message_id=message_id, reply_markup=markup)
+    except Exception as e:
+        logging.error(f"Error sending subscription message: {e}")
 
 @app.on_message(filters.command("start"))
 async def start(client, message):
@@ -43,8 +46,12 @@ async def open_giveaway(client, message):
     global participants
     participants = []
     logging.info(f"Received /openga command from user {message.from_user.id}")
-    await app.send_message(config.channel_id, config.announce_message_start)
-    await message.reply("Giveaway dibuka! Daftarkan username Anda dengan perintah /ikutga {username}.")
+
+    try:
+        await app.send_message(config.channel_id, config.announce_message_start)
+        await message.reply("Giveaway dibuka! Daftarkan username Anda dengan perintah /ikutga {username}.")
+    except Exception as e:
+        logging.error(f"Error sending giveaway start announcement: {e}")
 
 @app.on_message(filters.command("ikutga") & filters.private)
 async def join_giveaway(client, message):
@@ -68,8 +75,12 @@ async def close_giveaway(client, message):
         winner = random.choice(participants)
         participants.clear()
         logging.info(f"Received /closega command from user {message.from_user.id}, winner: {winner}")
-        await app.send_message(config.channel_id, config.announce_message_winner.format(winner=winner))
-        await message.reply(f"Giveaway ditutup! Pemenangnya adalah: {winner}")
+
+        try:
+            await app.send_message(config.channel_id, config.announce_message_winner.format(winner=winner))
+            await message.reply(f"Giveaway ditutup! Pemenangnya adalah: {winner}")
+        except Exception as e:
+            logging.error(f"Error sending giveaway winner announcement: {e}")
     else:
         await message.reply("Tidak ada peserta yang terdaftar.")
 
