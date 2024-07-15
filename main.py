@@ -1,7 +1,11 @@
+import logging
 from pyrogram import Client, filters
 from pyrogram.errors import UserNotParticipant
 import config
 import random
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
 
 app = Client("bot", api_id=config.api_id, api_hash=config.api_hash, bot_token=config.bot_token)
 
@@ -26,21 +30,29 @@ async def pesan_langganan(user_id, message_id):
     ]
     await app.send_message(user_id, config.pesan_join, reply_to_message_id=message_id, reply_markup=markup)
 
+@app.on_message(filters.command("start"))
+async def start(client, message):
+    logging.info(f"Received /start command from user {message.from_user.id}")
+    await message.reply("Selamat datang! Gunakan /openga untuk memulai giveaway.")
+
 @app.on_message(filters.command("openga") & filters.user([config.owner_id, config.admin_id]))
 async def open_giveaway(client, message):
     global participants
     participants = []
+    logging.info(f"Received /openga command from user {message.from_user.id}")
     await app.send_message(config.channel_id, config.announce_message_start)
     await message.reply("Giveaway dibuka! Daftarkan username Anda dengan perintah /ikutga {username}.")
 
 @app.on_message(filters.command("ikutga") & filters.private)
 async def join_giveaway(client, message):
-    username = message.text.split(" ", 1)[1] if len(message.text.split(" ")) > 1 else None
-    if username and await cek_langganan_channel(message.from_user.id):
-        participants.append(username)
-        await message.reply(f"Username {username} berhasil didaftarkan untuk giveaway!")
-    elif username:
-        await pesan_langganan(message.from_user.id, message.message_id)
+    if len(message.text.split()) > 1:
+        username = message.text.split(" ", 1)[1]
+        if await cek_langganan_channel(message.from_user.id):
+            participants.append(username)
+            logging.info(f"User {message.from_user.id} registered username {username} for the giveaway")
+            await message.reply(f"Username {username} berhasil didaftarkan untuk giveaway!")
+        else:
+            await pesan_langganan(message.from_user.id, message.message_id)
     else:
         await message.reply("Silakan masukkan username Anda setelah perintah /ikutga")
 
@@ -49,6 +61,7 @@ async def close_giveaway(client, message):
     if participants:
         winner = random.choice(participants)
         participants.clear()
+        logging.info(f"Received /closega command from user {message.from_user.id}, winner: {winner}")
         await app.send_message(config.channel_id, config.announce_message_winner.format(winner=winner))
         await message.reply(f"Giveaway ditutup! Pemenangnya adalah: {winner}")
     else:
