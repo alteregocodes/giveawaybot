@@ -12,7 +12,7 @@ app = Client("bot", api_id=config.api_id, api_hash=config.api_hash, bot_token=co
 participants = []
 
 async def cek_langganan_channel(user_id):
-    if user_id == config.admin_id:
+    if user_id == config.owner_id or user_id == config.admin_id:
         return True
     try:
         await app.get_chat_member(config.channel_id, user_id)
@@ -49,6 +49,7 @@ async def open_giveaway(client, message):
 
     try:
         await app.send_message(config.channel_id, config.announce_message_start)
+        await app.send_message(config.channel_id2, config.announce_message_start)
         await message.reply("Giveaway dibuka! Daftarkan username Anda dengan perintah /ikutga {username}.")
     except Exception as e:
         logging.error(f"Error sending giveaway start announcement: {e}")
@@ -78,6 +79,7 @@ async def close_giveaway(client, message):
 
         try:
             await app.send_message(config.channel_id, config.announce_message_winner.format(winner=winner))
+            await app.send_message(config.channel_id2, config.announce_message_winner.format(winner=winner))
             await message.reply(f"Giveaway ditutup! Pemenangnya adalah: {winner}")
         except Exception as e:
             logging.error(f"Error sending giveaway winner announcement: {e}")
